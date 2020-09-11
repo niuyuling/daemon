@@ -44,53 +44,73 @@ int get_process_pid(char *proces_name)
 char *times()
 {
     time_t t;
-    struct tm *timeinfo;        //结构体
+    struct tm *timeinfo;
     time(&t);
     timeinfo = localtime(&t);
-    return asctime(timeinfo);   //以字符串形式输出localtime本地时间
+    return asctime(timeinfo);
 }
 
-int logs(char *str)
+int logs(char *str, char *configfile)
 {
     FILE *fp = NULL;
-    fp = fopen(read_conf("daemon.conf", "global", "LOFFILE"), "a+");
+    fp = fopen(read_conf(configfile, "global", "LOFFILE"), "a+");
     fprintf(fp, str);
     return fclose(fp);
 }
 
-int loop()
+int loop(char *configfile)
 {
     FILE *fp;
     char buffer[PATH_SIZE];
     while (1) {
-        if (get_process_pid(read_conf("daemon.conf", "global", "PROCESS_NAME")) <= 0) {
-            logs(times());
-            logs("没有运行\n");
-            fp = _popen(read_conf("daemon.conf", "global", "COMMAND"), "r");
+        if (get_process_pid(read_conf(configfile, "global", "PROCESS_NAME")) <= 0) {
+            logs(times(), configfile);
+            logs("没有运行\n", configfile);
+            fp = _popen(read_conf(configfile, "global", "COMMAND"), "r");
 
-            logs(times());
-            logs("执行结果\n");
+            logs(times(), configfile);
+            logs("执行结果\n", configfile);
             while (fgets(buffer, sizeof(buffer), fp)) {
                 //printf("%s", buffer);
-                logs(buffer);
+                logs(buffer, configfile);
             }
             _pclose(fp);
         } else {
-            logs(times());
-            logs("运行\n");
+            logs(times(), configfile);
+            logs("运行\n", configfile);
         }
-        sleep(atoi(read_conf("daemon.conf", "global", "TIME")));
+        sleep(atoi(read_conf(configfile, "global", "TIME")));
     }
 }
 
-int main(int argc, char **argv)
+int main(int argc, char **argv, char **env)
 {
+    char configfile[PATH_SIZE];
+    int opt;
+    
+    memset(configfile, 0, PATH_SIZE);
+    while ((opt = getopt(argc, argv, "c:")) != -1) {
+        switch (opt) {
+            case 'c':
+                strcpy(configfile, optarg);
+                break;
+                
+            default:
+                break;
+        }
+    }
+    
+    if (strlen(configfile) == 0) {
+        strcpy(configfile, "daemon.conf");
+    }
+    printf("%s\n", configfile);
+    
     if (daemon(1, 1)) {
         perror("daemon");
         return 1;
     }
 
-    loop();
+    loop(configfile);
 
     return 0;
 }
