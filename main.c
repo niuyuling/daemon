@@ -53,7 +53,7 @@ char *times()
 int logs(char *str, char *configfile)
 {
     FILE *fp = NULL;
-    fp = fopen(read_conf(configfile, "global", "LOFFILE"), "a+");
+    fp = fopen(read_conf(configfile, "global", "LOGFILE"), "a+");
     fprintf(fp, str);
     return fclose(fp);
 }

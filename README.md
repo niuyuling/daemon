@@ -5,7 +5,7 @@
         PROCESS_NAME = "frpc";      //进程名称条件变量
         COMMAND = "ls -al";         //进程名称条件变量不成立执行的命令
         TIME = "10";                //时间条件变量, 单位秒
-        LOFFILE = "log.txt";        //日志记录
+        LOGFILE = "log.txt";        //日志记录
     }
 
 ### Build
